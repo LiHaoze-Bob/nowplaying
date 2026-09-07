@@ -10,7 +10,6 @@ function maxChars(width: number, startX: number, size = 7.2): number {
 }
 
 function shouldSpin(style: CoverStyle, mode: SpinMode, isNowPlaying: boolean): boolean {
-  if (style === "square") return false;
   if (mode === "never") return false;
   if (mode === "always") return true;
   return isNowPlaying;
@@ -43,18 +42,20 @@ function statusBadge(
   y: number,
 ): string {
   const label = escapeXml(status.toUpperCase());
-  const approxWidth = status.length * 6.2 + (isNowPlaying ? 22 : 14);
-  const bx = x - approxWidth;
+  const textWidth = status.length * 6.8;
+  const textOffset = isNowPlaying ? 24 : 18;
+  const badgeWidth = textOffset + textWidth + 9;
+  const bx = x - badgeWidth;
 
   const icon = isNowPlaying
     ? equalizerBars(bx + 6, y - 10, "ffffff")
     : `<circle cx="${bx + 8}" cy="${y - 4}" r="2.5" fill="#ffffff" opacity="0.9"/>`;
 
-  const textX = isNowPlaying ? bx + 20 : bx + 14;
+  const textX = bx + textOffset;
 
   return `
-    <rect x="${bx - 6}" y="${y - 14}" width="${approxWidth + 10}" height="20" rx="10" fill="#ffffff" opacity="0.14"/>
-    <rect x="${bx - 5.5}" y="${y - 13.5}" width="${approxWidth + 9}" height="19" rx="9.5" fill="none" stroke="#ffffff" stroke-opacity="0.22"/>
+    <rect x="${bx}" y="${y - 14}" width="${badgeWidth}" height="20" rx="10" fill="#ffffff" opacity="0.14"/>
+    <rect x="${bx + 0.5}" y="${y - 13.5}" width="${badgeWidth - 1}" height="19" rx="9.5" fill="none" stroke="#ffffff" stroke-opacity="0.22"/>
     ${icon}
     <text x="${textX}" y="${y}" fill="#ffffff" font-family="${FONT}" font-size="10" font-weight="700" letter-spacing="0.06em">${label}</text>
   `;
@@ -164,6 +165,11 @@ export function renderTrackCard(
       ? `<rect x="${LAYOUT.padding + 0.5}" y="${coverY + 0.5}" width="${cover.size - 1}" height="${cover.size - 1}" rx="13.5" fill="none" stroke="#ffffff" stroke-opacity="0.32"/>`
       : "";
 
+  const squareSpinAnimation =
+    coverStyle === "square" && spin
+      ? `<animateTransform attributeName="transform" type="rotate" from="0 ${LAYOUT.padding + cover.size / 2} ${coverY + cover.size / 2}" to="360 ${LAYOUT.padding + cover.size / 2} ${coverY + cover.size / 2}" dur="${spinDuration}s" repeatCount="indefinite"/>`
+      : "";
+
   return wrapSvg(
     width,
     LAYOUT.cardHeight,
@@ -205,8 +211,11 @@ export function renderTrackCard(
   <rect x="0.5" y="0.5" width="${width - 1}" height="${LAYOUT.cardHeight - 1}" rx="21.5" fill="none" stroke="#ffffff" stroke-opacity="0.28"/>
   <a href="${escapeXml(track.url)}" target="_blank">
     <g filter="url(#cardCoverShadow)">
-      <g transform="${coverAnchor}">${cover.markup}</g>
-      ${squareCoverBorder}
+      <g>
+        ${squareSpinAnimation}
+        <g transform="${coverAnchor}">${cover.markup}</g>
+        ${squareCoverBorder}
+      </g>
     </g>
     <g>${renderInfoPanel(track, options, textX)}</g>
   </a>
