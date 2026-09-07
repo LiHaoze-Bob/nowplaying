@@ -41,22 +41,22 @@ function statusBadge(
   isNowPlaying: boolean,
   x: number,
   y: number,
-  theme: CardOptions["theme"],
 ): string {
   const label = escapeXml(status.toUpperCase());
   const approxWidth = status.length * 6.2 + (isNowPlaying ? 22 : 14);
   const bx = x - approxWidth;
 
   const icon = isNowPlaying
-    ? equalizerBars(bx + 6, y - 10, theme.accent)
-    : `<circle cx="${bx + 8}" cy="${y - 4}" r="2.5" fill="#${theme.accent}"/>`;
+    ? equalizerBars(bx + 6, y - 10, "ffffff")
+    : `<circle cx="${bx + 8}" cy="${y - 4}" r="2.5" fill="#ffffff" opacity="0.9"/>`;
 
   const textX = isNowPlaying ? bx + 20 : bx + 14;
 
   return `
-    <rect x="${bx - 6}" y="${y - 14}" width="${approxWidth + 10}" height="20" rx="10" fill="#${theme.accent}" opacity="0.12"/>
+    <rect x="${bx - 6}" y="${y - 14}" width="${approxWidth + 10}" height="20" rx="10" fill="#ffffff" opacity="0.14"/>
+    <rect x="${bx - 5.5}" y="${y - 13.5}" width="${approxWidth + 9}" height="19" rx="9.5" fill="none" stroke="#ffffff" stroke-opacity="0.22"/>
     ${icon}
-    <text x="${textX}" y="${y}" fill="#${theme.accent}" font-family="${FONT}" font-size="10" font-weight="700" letter-spacing="0.06em">${label}</text>
+    <text x="${textX}" y="${y}" fill="#ffffff" font-family="${FONT}" font-size="10" font-weight="700" letter-spacing="0.06em">${label}</text>
   `;
 }
 
@@ -65,7 +65,7 @@ function renderInfoPanel(
   options: CardOptions,
   textX: number,
 ): string {
-  const { width, theme, showAlbum } = options;
+  const { width, showAlbum } = options;
   const chars = maxChars(width, textX);
 
   const status = track.isNowPlaying
@@ -82,23 +82,23 @@ function renderInfoPanel(
   const badgeX = width - LAYOUT.padding;
 
   return `
-    <text x="${textX}" y="30" fill="#${theme.muted}" font-family="${FONT}" font-size="10" font-weight="600" letter-spacing="0.12em">LAST.FM</text>
-    ${statusBadge(status, track.isNowPlaying, badgeX, 30, theme)}
+    <text x="${textX}" y="30" fill="#ffffff" fill-opacity="0.72" font-family="${FONT}" font-size="10" font-weight="650" letter-spacing="0.12em">♪ APPLE MUSIC</text>
+    ${statusBadge(status, track.isNowPlaying, badgeX, 30)}
 
-    <text x="${textX}" y="58" fill="#${theme.text}" font-family="${FONT}" font-size="17" font-weight="700">${title}</text>
+    <text x="${textX}" y="58" fill="#ffffff" font-family="${FONT}" font-size="17" font-weight="700">${title}</text>
 
-    <text x="${textX}" y="78" fill="#${theme.muted}" font-family="${FONT}" font-size="12">
-      <tspan fill="#${theme.muted}" opacity="0.75">by </tspan>
-      <tspan fill="#${theme.text}" font-weight="600">${artist}</tspan>
+    <text x="${textX}" y="78" fill="#ffffff" fill-opacity="0.82" font-family="${FONT}" font-size="12">
+      <tspan fill-opacity="0.64">by </tspan>
+      <tspan font-weight="600">${artist}</tspan>
     </text>
 
     ${
       album
         ? `
     <g transform="translate(${textX}, 94)">
-      <rect width="10" height="10" rx="2" fill="#${theme.accent}" opacity="0.2"/>
-      <circle cx="5" cy="5" r="2.5" fill="#${theme.accent}" opacity="0.85"/>
-      <text x="16" y="9" fill="#${theme.muted}" font-family="${FONT}" font-size="11">${album}</text>
+      <rect width="10" height="10" rx="3" fill="#ffffff" opacity="0.16"/>
+      <circle cx="5" cy="5" r="2.5" fill="#ffffff" opacity="0.72"/>
+      <text x="16" y="9" fill="#ffffff" fill-opacity="0.64" font-family="${FONT}" font-size="11">${album}</text>
     </g>`
         : ""
     }
@@ -155,14 +155,59 @@ export function renderTrackCard(
       ? `translate(${LAYOUT.padding}, ${coverY})`
       : `translate(${LAYOUT.padding + cover.size / 2}, ${coverY + cover.size / 2})`;
 
+  const backdrop = coverDataUri
+    ? `<image href="${coverDataUri}" x="-32" y="-32" width="${width + 64}" height="${LAYOUT.cardHeight + 64}" preserveAspectRatio="xMidYMid slice" filter="url(#cardBackdropBlur)" opacity="0.9"/>`
+    : `<rect width="${width}" height="${LAYOUT.cardHeight}" fill="url(#cardFallbackGradient)"/>`;
+
+  const squareCoverBorder =
+    coverStyle === "square"
+      ? `<rect x="${LAYOUT.padding + 0.5}" y="${coverY + 0.5}" width="${cover.size - 1}" height="${cover.size - 1}" rx="13.5" fill="none" stroke="#ffffff" stroke-opacity="0.32"/>`
+      : "";
+
   return wrapSvg(
     width,
     LAYOUT.cardHeight,
     `
-  <rect width="${width}" height="${LAYOUT.cardHeight}" rx="12" fill="#${theme.bg}" stroke="#${theme.border}" stroke-width="1"/>
-  <line x1="${textX - 8}" y1="36" x2="${textX - 8}" y2="${LAYOUT.cardHeight - 20}" stroke="#${theme.border}" stroke-width="1" opacity="0.6"/>
+  <defs>
+    <clipPath id="cardGlassClip">
+      <rect width="${width}" height="${LAYOUT.cardHeight}" rx="22"/>
+    </clipPath>
+    <filter id="cardBackdropBlur" x="-20%" y="-50%" width="140%" height="200%">
+      <feGaussianBlur stdDeviation="22"/>
+      <feColorMatrix type="saturate" values="1.3"/>
+    </filter>
+    <filter id="cardCoverShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#000000" flood-opacity="0.32"/>
+    </filter>
+    <linearGradient id="cardFallbackGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8b8fa8"/>
+      <stop offset="0.5" stop-color="#5f6685"/>
+      <stop offset="1" stop-color="#272b3a"/>
+    </linearGradient>
+    <linearGradient id="cardReadabilityShade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.16"/>
+      <stop offset="0.38" stop-color="#000000" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.58"/>
+    </linearGradient>
+    <linearGradient id="cardTopSheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="0.45" stop-color="#ffffff" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g clip-path="url(#cardGlassClip)">
+    <rect width="${width}" height="${LAYOUT.cardHeight}" fill="#${theme.bg}"/>
+    ${backdrop}
+    <rect width="${width}" height="${LAYOUT.cardHeight}" fill="url(#cardReadabilityShade)"/>
+    <rect width="${width}" height="${LAYOUT.cardHeight}" fill="#ffffff" opacity="0.055"/>
+    <rect width="${width}" height="${LAYOUT.cardHeight * 0.62}" fill="url(#cardTopSheen)"/>
+  </g>
+  <rect x="0.5" y="0.5" width="${width - 1}" height="${LAYOUT.cardHeight - 1}" rx="21.5" fill="none" stroke="#ffffff" stroke-opacity="0.28"/>
   <a href="${escapeXml(track.url)}" target="_blank">
-    <g transform="${coverAnchor}">${cover.markup}</g>
+    <g filter="url(#cardCoverShadow)">
+      <g transform="${coverAnchor}">${cover.markup}</g>
+      ${squareCoverBorder}
+    </g>
     <g>${renderInfoPanel(track, options, textX)}</g>
   </a>
   <title>${escapeXml(`${track.artist} — ${track.name}`)}</title>

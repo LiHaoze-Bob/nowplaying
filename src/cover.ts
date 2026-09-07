@@ -60,7 +60,7 @@ export function renderCover(params: {
     const content = coverDataUri
       ? `<image href="${coverDataUri}" width="${SIZE}" height="${SIZE}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${idPrefix}SquareClip)"/>`
       : `
-        <rect width="${SIZE}" height="${SIZE}" rx="10" fill="#${theme.coverBg}"/>
+        <rect width="${SIZE}" height="${SIZE}" rx="14" fill="#${theme.coverBg}"/>
         <path d="M${SIZE / 2 - 12} ${SIZE / 2 + 10} L${SIZE / 2 - 5} ${SIZE / 2 - 8} L${SIZE / 2 + 12} ${SIZE / 2 + 10} Z" fill="#${theme.muted}" opacity="0.35"/>
         <circle cx="${SIZE / 2}" cy="${SIZE / 2 - 4}" r="14" fill="none" stroke="#${theme.muted}" stroke-width="2" opacity="0.25"/>
       `;
@@ -70,10 +70,10 @@ export function renderCover(params: {
       markup: `
         <defs>
           <clipPath id="${idPrefix}SquareClip">
-            <rect width="${SIZE}" height="${SIZE}" rx="10"/>
+            <rect width="${SIZE}" height="${SIZE}" rx="14"/>
           </clipPath>
         </defs>
-        <rect width="${SIZE}" height="${SIZE}" rx="10" fill="#${theme.coverBg}"/>
+        <rect width="${SIZE}" height="${SIZE}" rx="14" fill="#${theme.coverBg}"/>
         ${content}
       `,
     };
